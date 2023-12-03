@@ -22,6 +22,14 @@ build_docker_image:
 
 # make push_docker_image
 push_docker_image: build_docker_image
-	@echo aws ecr get-login-password --region $(REGION) --profile $(AWS_PROFILE) | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.$(REGION).amazonaws.com
+	@aws ecr get-login-password --region $(REGION) --profile $(AWS_PROFILE) | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.$(REGION).amazonaws.com
 	@docker tag test-app:latest $(AWS_ACCOUNT_ID).dkr.ecr.$(REGION).amazonaws.com/$(REPO_NAME):latest
 	@docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(REGION).amazonaws.com/$(REPO_NAME):latest
+
+#make restart
+restart: push_docker_image
+	@aws ecs update-service \
+     --service $(SERVICE_NAME) \
+     --cluster $(CLUSTER_NAME) \
+     --force-new-deployment
+	 --profile $(AWS_PROFILE)
