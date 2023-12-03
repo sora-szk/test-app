@@ -19,15 +19,18 @@ export const createUsecase = async (repository?: DBRepository): Promise<Usecase>
         DB_PORT: port,
         DB_USER: user,
         DB_PASSWORD: password,
+        DB_PASSWORD_SECRET: passwordSecret,
         DB_DATABASE: database,
     } = process.env
+
+    const _password = passwordSecret ? JSON.parse(passwordSecret)['root_password'] : password
     const repo =
         repository ??
         (await createMySQLRepository({
             host,
             port: Number(port),
             user,
-            password,
+            password: _password,
             database,
         }))
     return new Interactor(repo)
